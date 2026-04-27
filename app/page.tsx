@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { CaptainCard, FLEET } from "./components/CaptainCard";
+import { LiveStats } from "./components/LiveStats";
+import { Faq } from "./components/Faq";
 
 export default function Home() {
   return (
@@ -23,9 +25,9 @@ export default function Home() {
             Your AI fleet runs the Hyperliquid markets 24/7. Real captains,
             real fills, real builder fees back to you via referral.
           </p>
-          <div className="mt-10 flex items-center justify-center gap-3">
+          <div className="mt-10 flex items-center justify-center gap-3 flex-wrap">
             <Link
-              href="/lab"
+              href="/join"
               className="inline-flex items-center gap-2 rounded-full bg-[color:var(--starlight)] text-[color:var(--void)] px-6 py-3 text-sm font-bold hover:opacity-90 transition"
             >
               Join the fleet
@@ -40,6 +42,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* LIVE STATS */}
+      <LiveStats />
 
       {/* HOW IT WORKS */}
       <section className="mx-auto max-w-5xl px-6 py-16">
@@ -104,6 +109,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* FAQ */}
+      <Faq />
+
       {/* CTA */}
       <section className="relative mx-auto max-w-3xl px-6 py-20 text-center">
         <div className="absolute inset-0 starfield opacity-30" />
@@ -115,7 +123,7 @@ export default function Home() {
             The cosmos is waiting.
           </p>
           <Link
-            href="/lab"
+            href="/join"
             className="mt-8 inline-flex items-center gap-2 rounded-full bg-[color:var(--starlight)] text-[color:var(--void)] px-7 py-3 text-sm font-bold hover:opacity-90 transition"
           >
             Join the fleet

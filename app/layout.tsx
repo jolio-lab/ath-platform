@@ -58,10 +58,22 @@ function Nav() {
             Fleet
           </Link>
           <Link
+            href="/dashboard"
+            className="hover:text-[color:var(--starlight)] hidden sm:inline"
+          >
+            Dashboard
+          </Link>
+          <Link
             href="/lab"
-            className="hover:text-[color:var(--starlight)]"
+            className="hover:text-[color:var(--starlight)] hidden sm:inline"
           >
             Lab
+          </Link>
+          <Link
+            href="/join"
+            className="rounded-full bg-[color:var(--starlight)] text-[color:var(--void)] px-4 py-1.5 text-xs font-bold hover:opacity-90 transition"
+          >
+            Join
           </Link>
         </div>
       </div>
