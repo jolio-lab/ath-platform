@@ -1,26 +1,72 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Deep Space */
+  --void: #06101e;
+  --surface: #0c1828;
+  --surface-2: #0a1422;
+  --border: #1e293b;
+
+  /* Starlight (text) */
+  --starlight: #e2e8f0;
+  --meteor: #94a3b8;
+  --dust: #475569;
+
+  /* Signal */
+  --green-giant: #10b981;
+  --red-dwarf: #f43f5e;
+  --solar-gold: #fbbf24;
+  --cyan-nebula: #22d3ee;
+  --purple-cosmos: #a78bfa;
+
+  /* Captains */
+  --polaris: #93c5fd;
+  --vega: #c4b5fd;
+  --sirius: #818cf8;
+  --lyra: #fcd34d;
+  --andromeda: #f472b6;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--void);
+  --color-foreground: var(--starlight);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--void);
+  color: var(--starlight);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Subtle starfield — radial dots at random positions */
+.starfield {
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(226, 232, 240, 0.18), transparent 50%),
+    radial-gradient(1px 1px at 70% 80%, rgba(226, 232, 240, 0.12), transparent 50%),
+    radial-gradient(1px 1px at 40% 60%, rgba(226, 232, 240, 0.15), transparent 50%),
+    radial-gradient(1px 1px at 90% 20%, rgba(226, 232, 240, 0.1), transparent 50%),
+    radial-gradient(1.5px 1.5px at 15% 85%, rgba(147, 197, 253, 0.18), transparent 50%),
+    radial-gradient(1px 1px at 60% 10%, rgba(226, 232, 240, 0.12), transparent 50%),
+    radial-gradient(1px 1px at 30% 90%, rgba(226, 232, 240, 0.1), transparent 50%),
+    radial-gradient(1.5px 1.5px at 80% 50%, rgba(196, 181, 253, 0.15), transparent 50%);
+  background-size: 600px 600px;
+}
+
+/* Hero gradient */
+.hero-gradient {
+  background:
+    radial-gradient(ellipse at top, rgba(147, 197, 253, 0.08), transparent 60%),
+    radial-gradient(ellipse at bottom, rgba(196, 181, 253, 0.05), transparent 60%);
+}
+
+/* Smooth orbit glow */
+@keyframes orbit-glow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+.orbit-pulse {
+  animation: orbit-glow 3s ease-in-out infinite;
 }

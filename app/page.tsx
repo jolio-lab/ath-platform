@@ -1,361 +1,181 @@
-"use client";
-
-import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount, useWalletClient } from "wagmi";
-import { useEffect, useState } from "react";
-import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { ExchangeClient, HttpTransport, InfoClient } from "@nktkas/hyperliquid";
-import {
-  approveAgent,
-  approveBuilderFee,
-  fetchAgentApprovals,
-  fetchBuilderApprovals,
-  fetchUserState,
-} from "@/lib/hl";
-import {
-  BUILDER_FEE_F,
-  MAX_BUILDER_FEE,
-  SUNNY_BUILDER_ADDRESS,
-} from "@/lib/constants";
-
-type Status = "idle" | "loading" | "success" | "error";
-type StepState = { status: Status; message?: string; data?: unknown };
+import Link from "next/link";
+import { CaptainCard, FLEET } from "./components/CaptainCard";
 
 export default function Home() {
-  const { address, isConnected } = useAccount();
-  const { data: walletClient } = useWalletClient();
-
-  const [userState, setUserState] = useState<{
-    accountValue?: string;
-    builderApproved?: boolean;
-    agentCount?: number;
-  }>({});
-
-  const [step1, setStep1] = useState<StepState>({ status: "idle" });
-  const [step2, setStep2] = useState<StepState>({ status: "idle" });
-  const [step3, setStep3] = useState<StepState>({ status: "idle" });
-
-  const [agentKey, setAgentKey] = useState<`0x${string}` | null>(null);
-  const [agentAddress, setAgentAddress] = useState<`0x${string}` | null>(null);
-
-  async function refreshState() {
-    if (!address) return;
-    try {
-      const [state, builders, agents] = await Promise.all([
-        fetchUserState(address),
-        fetchBuilderApprovals(address),
-        fetchAgentApprovals(address),
-      ]);
-
-      const accountValue = state?.marginSummary?.accountValue;
-      const builderApproved = Array.isArray(builders)
-        ? builders.some(
-            (b: { builder: string }) =>
-              b.builder?.toLowerCase() === SUNNY_BUILDER_ADDRESS.toLowerCase(),
-          )
-        : false;
-      const agentCount = Array.isArray(agents) ? agents.length : 0;
-      setUserState({ accountValue, builderApproved, agentCount });
-    } catch (e) {
-      console.error("refreshState", e);
-    }
-  }
-
-  useEffect(() => {
-    if (isConnected) refreshState();
-  }, [isConnected, address]);
-
-  async function handleApproveBuilder() {
-    if (!walletClient || !address) return;
-    setStep1({ status: "loading", message: "Sign in your wallet…" });
-    try {
-      const wallet = {
-        address,
-        signTypedData: walletClient.signTypedData.bind(walletClient),
-      };
-      const res = await approveBuilderFee(wallet, MAX_BUILDER_FEE);
-      setStep1({ status: "success", message: `Approved ${MAX_BUILDER_FEE} for Sunny`, data: res });
-      await refreshState();
-    } catch (e: unknown) {
-      setStep1({ status: "error", message: (e as Error).message });
-    }
-  }
-
-  async function handleApproveAgent() {
-    if (!walletClient || !address) return;
-    setStep2({ status: "loading", message: "Generating agent + sign…" });
-    try {
-      const pk = generatePrivateKey();
-      const account = privateKeyToAccount(pk);
-      setAgentKey(pk);
-      setAgentAddress(account.address);
-
-      const wallet = {
-        address,
-        signTypedData: walletClient.signTypedData.bind(walletClient),
-      };
-      const agentName = `ATHTest ${Date.now().toString().slice(-6)}`;
-      const res = await approveAgent(wallet, account.address, agentName);
-      setStep2({
-        status: "success",
-        message: `Agent ${account.address.slice(0, 10)}… approved as "${agentName}"`,
-        data: res,
-      });
-      await refreshState();
-    } catch (e: unknown) {
-      setStep2({ status: "error", message: (e as Error).message });
-    }
-  }
-
-  async function handleTestTrade() {
-    if (!agentKey || !address) return;
-    setStep3({ status: "loading", message: "Placing test order via agent…" });
-    try {
-      const agent = privateKeyToAccount(agentKey);
-      const transport = new HttpTransport();
-      const exchange = new ExchangeClient({ transport, wallet: agent });
-      const info = new InfoClient({ transport });
-
-      const mids = await info.allMids();
-      const mid = parseFloat(mids["ETH"] ?? "0");
-      if (!mid) throw new Error("Could not fetch ETH mid");
-
-      const limitPx = Math.round(mid * 1.005).toString();
-      // HL min order value $10 — at ETH ~$2300, need ≥0.005 ETH (~$11)
-      const size = "0.005";
-
-      const result = await exchange.order({
-        orders: [
-          {
-            a: 1,
-            b: true,
-            p: limitPx,
-            s: size,
-            r: false,
-            t: { limit: { tif: "Ioc" } },
-          },
-        ],
-        grouping: "na",
-        builder: { b: SUNNY_BUILDER_ADDRESS, f: BUILDER_FEE_F },
-      });
-
-      setStep3({
-        status: "success",
-        message: `Order sent! Builder fee ${BUILDER_FEE_F / 10} bps to Sunny`,
-        data: result,
-      });
-    } catch (e: unknown) {
-      setStep3({ status: "error", message: (e as Error).message });
-    }
-  }
-
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10 flex-1 flex flex-col gap-6">
-      <header className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">ATH</h1>
-          <p className="text-xs text-slate-400 font-mono mt-1">
-            Builder Code + Agent verification harness
+    <div className="flex-1">
+      {/* HERO */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 starfield opacity-60" />
+        <div className="absolute inset-0 hero-gradient" />
+        <div className="relative mx-auto max-w-5xl px-6 pt-16 pb-20 sm:pt-24 sm:pb-28 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface)]/60 px-3 py-1 text-[10px] font-mono uppercase tracking-widest text-[color:var(--meteor)] mb-6">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-[color:var(--green-giant)] orbit-pulse" />
+            Live on Hyperliquid
+          </div>
+          <h1 className="text-5xl sm:text-7xl font-bold tracking-tight">
+            ATH
+          </h1>
+          <p className="mt-3 text-lg sm:text-xl text-[color:var(--meteor)] font-light">
+            Trade by the stars
           </p>
-        </div>
-        <ConnectButton />
-      </header>
-
-      {!isConnected && (
-        <Card>
-          <p className="text-sm text-slate-300">
-            Connect a Hyperliquid-funded wallet to run the verification flow.
-            Use a fresh test wallet (~$30 USDC deposited to HL perps).
+          <p className="mt-6 mx-auto max-w-xl text-sm sm:text-base text-[color:var(--meteor)] leading-relaxed">
+            Your AI fleet runs the Hyperliquid markets 24/7. Real captains,
+            real fills, real builder fees back to you via referral.
           </p>
-          <p className="text-xs text-slate-500 mt-3">
-            Builder address (Sunny):{" "}
-            <code className="text-slate-300">{SUNNY_BUILDER_ADDRESS}</code>
-          </p>
-        </Card>
-      )}
-
-      {isConnected && (
-        <>
-          <Card>
-            <div className="text-xs uppercase tracking-wider text-slate-400 mb-2">
-              Connected wallet
-            </div>
-            <div className="font-mono text-sm break-all">{address}</div>
-            <div className="grid grid-cols-3 gap-3 mt-4">
-              <Tile label="HL Balance" value={fmtUsd(userState.accountValue)} />
-              <Tile
-                label="Builder approved"
-                value={userState.builderApproved ? "✓ yes" : "— no"}
-                tone={userState.builderApproved ? "good" : "muted"}
-              />
-              <Tile
-                label="Agents"
-                value={userState.agentCount?.toString() ?? "—"}
-              />
-            </div>
-            <button
-              onClick={refreshState}
-              className="text-xs text-slate-400 hover:text-slate-200 mt-3"
+          <div className="mt-10 flex items-center justify-center gap-3">
+            <Link
+              href="/lab"
+              className="inline-flex items-center gap-2 rounded-full bg-[color:var(--starlight)] text-[color:var(--void)] px-6 py-3 text-sm font-bold hover:opacity-90 transition"
             >
-              ↻ refresh
-            </button>
-          </Card>
+              Join the fleet
+              <span aria-hidden>→</span>
+            </Link>
+            <a
+              href="#fleet"
+              className="inline-flex items-center gap-2 rounded-full border border-[color:var(--border)] px-6 py-3 text-sm hover:border-[color:var(--meteor)] transition"
+            >
+              See the captains
+            </a>
+          </div>
+        </div>
+      </section>
 
-          <StepCard
+      {/* HOW IT WORKS */}
+      <section className="mx-auto max-w-5xl px-6 py-16">
+        <div className="text-xs font-mono uppercase tracking-widest text-[color:var(--meteor)] text-center">
+          How it works
+        </div>
+        <h2 className="mt-2 text-2xl sm:text-3xl font-bold text-center">
+          Three steps to the cosmos
+        </h2>
+        <div className="mt-10 grid gap-4 md:grid-cols-3">
+          <Step
             n={1}
-            title="Approve Builder Fee"
-            desc={`Sign once to allow the Sunny address to charge up to ${MAX_BUILDER_FEE} per trade. Required before any trade can carry a builder fee.`}
-            state={step1}
-            cta="Approve builder fee"
-            onClick={handleApproveBuilder}
+            title="Connect your wallet"
+            body="Sign in with the wallet that holds your Hyperliquid USDC. We never touch your private key."
           />
-
-          <StepCard
+          <Step
             n={2}
-            title="Generate + Approve Agent"
-            desc="Generate a fresh agent keypair in your browser. Sign to authorize it to place trades on your HL account (cannot withdraw)."
-            state={step2}
-            cta="Generate + approve agent"
-            onClick={handleApproveAgent}
-            extra={
-              agentAddress ? (
-                <div className="text-xs text-slate-400 font-mono mt-2 break-all">
-                  Agent: {agentAddress}
-                </div>
-              ) : null
-            }
+            title="Approve the fleet"
+            body="One signature gives our captains permission to trade on your account. They cannot withdraw or transfer your funds."
           />
-
-          <StepCard
+          <Step
             n={3}
-            title="Place test trade with builder code"
-            desc={`Agent places a tiny IOC long ETH 0.001 with builder fee = ${BUILDER_FEE_F / 10} bps to Sunny. Verifies the full chain works end-to-end.`}
-            state={step3}
-            cta="Place test trade"
-            onClick={handleTestTrade}
-            disabled={!agentKey}
+            title="Set your leverage"
+            body="Pick your risk profile. The fleet trades 24/7 — you watch the chart fill itself."
           />
+        </div>
+      </section>
 
-          {step3.status === "success" && (
-            <Card>
-              <div className="text-sm text-emerald-400 font-bold mb-2">
-                ✅ Verified end-to-end
-              </div>
-              <p className="text-xs text-slate-400">
-                Builder fees from this trade should now be claimable from the
-                Sunny address. Check{" "}
-                <a
-                  href={`https://app.hyperliquid.xyz/portfolio?address=${SUNNY_BUILDER_ADDRESS}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="underline text-slate-200"
-                >
-                  Sunny portfolio
-                </a>{" "}
-                and your test user position.
-              </p>
-            </Card>
-          )}
-        </>
-      )}
-    </main>
-  );
-}
+      {/* THE FLEET */}
+      <section id="fleet" className="relative mx-auto max-w-5xl px-6 py-16">
+        <div className="text-xs font-mono uppercase tracking-widest text-[color:var(--meteor)] text-center">
+          The fleet
+        </div>
+        <h2 className="mt-2 text-2xl sm:text-3xl font-bold text-center">
+          Four captains, one cosmos
+        </h2>
+        <p className="mt-3 mx-auto max-w-2xl text-sm text-[color:var(--meteor)] text-center">
+          Each captain runs a distinct strategy on their assigned market.
+          Together they cover the spectrum — steady, fast, aggressive,
+          contrarian.
+        </p>
+        <div className="mt-10 grid gap-4 md:grid-cols-2">
+          {FLEET.map((c) => (
+            <CaptainCard key={c.key} captain={c} />
+          ))}
+        </div>
+      </section>
 
-function fmtUsd(v: string | undefined) {
-  if (!v) return "—";
-  const n = parseFloat(v);
-  return Number.isFinite(n) ? `$${n.toFixed(2)}` : v;
-}
+      {/* WHY ATH */}
+      <section className="mx-auto max-w-5xl px-6 py-16">
+        <div className="text-xs font-mono uppercase tracking-widest text-[color:var(--meteor)] text-center">
+          Why ATH
+        </div>
+        <h2 className="mt-2 text-2xl sm:text-3xl font-bold text-center">
+          You keep custody. We do the work.
+        </h2>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Bullet title="Non-custodial" body="Your funds stay in your Hyperliquid account. Always." />
+          <Bullet title="No subscription" body="Free to use. We earn a tiny builder fee on each trade — aligned incentives." />
+          <Bullet title="Revoke anytime" body="One click in Hyperliquid revokes our agent. Done." />
+          <Bullet title="Real track record" body="Live captains have traded the founder's account for months. Public history." />
+        </div>
+      </section>
 
-function Card({ children }: { children: React.ReactNode }) {
-  return (
-    <section className="rounded-xl border border-slate-800 bg-[#0c1828] p-5">
-      {children}
-    </section>
-  );
-}
+      {/* CTA */}
+      <section className="relative mx-auto max-w-3xl px-6 py-20 text-center">
+        <div className="absolute inset-0 starfield opacity-30" />
+        <div className="relative">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
+            Ready to set sail?
+          </h2>
+          <p className="mt-3 text-[color:var(--meteor)]">
+            The cosmos is waiting.
+          </p>
+          <Link
+            href="/lab"
+            className="mt-8 inline-flex items-center gap-2 rounded-full bg-[color:var(--starlight)] text-[color:var(--void)] px-7 py-3 text-sm font-bold hover:opacity-90 transition"
+          >
+            Join the fleet
+            <span aria-hidden>→</span>
+          </Link>
+        </div>
+      </section>
 
-function Tile({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone?: "good" | "muted";
-}) {
-  const color =
-    tone === "good"
-      ? "text-emerald-400"
-      : tone === "muted"
-        ? "text-slate-500"
-        : "text-slate-100";
-  return (
-    <div className="rounded-lg border border-slate-800 bg-[#0a1422] px-3 py-2">
-      <div className="text-[10px] uppercase tracking-wider text-slate-500">
-        {label}
-      </div>
-      <div className={`text-sm font-mono font-bold mt-0.5 ${color}`}>
-        {value}
-      </div>
+      {/* FOOTER */}
+      <footer className="border-t border-[color:var(--border)] mt-10">
+        <div className="mx-auto max-w-5xl px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[color:var(--meteor)]">
+          <div className="font-mono">ATH · Cosmic Fleet · Hyperliquid</div>
+          <div className="flex items-center gap-5">
+            <Link href="/lab" className="hover:text-[color:var(--starlight)]">
+              Verification lab
+            </Link>
+            <a
+              href="https://github.com/jolio-lab/ath-platform"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-[color:var(--starlight)]"
+            >
+              GitHub
+            </a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
 
-function StepCard({
+function Step({
   n,
   title,
-  desc,
-  state,
-  cta,
-  onClick,
-  disabled,
-  extra,
+  body,
 }: {
   n: number;
   title: string;
-  desc: string;
-  state: StepState;
-  cta: string;
-  onClick: () => void;
-  disabled?: boolean;
-  extra?: React.ReactNode;
+  body: string;
 }) {
-  const statusColor: Record<Status, string> = {
-    idle: "border-slate-700 bg-slate-800 text-slate-300",
-    loading: "border-amber-700 bg-amber-900/40 text-amber-300",
-    success: "border-emerald-700 bg-emerald-900/40 text-emerald-300",
-    error: "border-rose-700 bg-rose-900/40 text-rose-300",
-  };
   return (
-    <Card>
-      <div className="flex items-start gap-4">
-        <div className="text-xl font-bold text-slate-500 leading-tight">{n}</div>
-        <div className="flex-1">
-          <h2 className="font-bold">{title}</h2>
-          <p className="text-xs text-slate-400 mt-1">{desc}</p>
-          {extra}
-          <div className="mt-3 flex items-center gap-3 flex-wrap">
-            <button
-              onClick={onClick}
-              disabled={disabled || state.status === "loading"}
-              className="rounded-md border border-slate-700 bg-slate-800 hover:bg-slate-700 px-4 py-2 text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {state.status === "loading" ? "…" : cta}
-            </button>
-            {state.message && (
-              <span
-                className={`text-xs px-2 py-1 rounded border font-mono ${statusColor[state.status]}`}
-              >
-                {state.status === "success" && "✓ "}
-                {state.status === "error" && "✗ "}
-                {state.message}
-              </span>
-            )}
-          </div>
-        </div>
+    <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5">
+      <div className="font-mono text-xs text-[color:var(--meteor)] tracking-widest">
+        STEP {n.toString().padStart(2, "0")}
       </div>
-    </Card>
+      <h3 className="mt-2 font-bold text-lg">{title}</h3>
+      <p className="mt-2 text-sm text-[color:var(--meteor)] leading-relaxed">
+        {body}
+      </p>
+    </div>
+  );
+}
+
+function Bullet({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4">
+      <div className="font-bold text-sm">{title}</div>
+      <p className="mt-1 text-xs text-[color:var(--meteor)] leading-relaxed">
+        {body}
+      </p>
+    </div>
   );
 }
