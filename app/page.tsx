@@ -121,7 +121,8 @@ export default function Home() {
       if (!mid) throw new Error("Could not fetch ETH mid");
 
       const limitPx = Math.round(mid * 1.005).toString();
-      const size = "0.001";
+      // HL min order value $10 — at ETH ~$2300, need ≥0.005 ETH (~$11)
+      const size = "0.005";
 
       const result = await exchange.order({
         orders: [
