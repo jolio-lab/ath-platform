@@ -123,13 +123,23 @@ export async function approveAgent(wallet: WalletLike, agentAddress: Address, ag
   });
 }
 
-export async function fetchBuilderApprovals(user: Address) {
+// Returns the max builder fee (in tenth-bps, e.g. 50 = 0.05%) the user has
+// approved for the given builder address. Returns 0 if no approval. The HL
+// endpoint `userBuilderFeeApprovals` does not exist; `maxBuilderFee` is the
+// correct query.
+export async function fetchMaxBuilderFee(
+  user: Address,
+  builder: Address,
+): Promise<number> {
   const res = await fetch(`${HL_API_URL}/info`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ type: "userBuilderFeeApprovals", user }),
+    body: JSON.stringify({ type: "maxBuilderFee", user, builder }),
   });
-  return res.json();
+  if (!res.ok) return 0;
+  const text = await res.text();
+  const n = Number(text);
+  return Number.isFinite(n) ? n : 0;
 }
 
 export async function fetchAgentApprovals(user: Address) {

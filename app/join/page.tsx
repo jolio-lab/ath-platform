@@ -9,7 +9,7 @@ import {
   approveAgent,
   approveBuilderFee,
   fetchAgentApprovals,
-  fetchBuilderApprovals,
+  fetchMaxBuilderFee,
   fetchUserState,
 } from "@/lib/hl";
 import { MAX_BUILDER_FEE, SUNNY_BUILDER_ADDRESS } from "@/lib/constants";
@@ -66,9 +66,9 @@ export default function JoinPage() {
     let cancelled = false;
     (async () => {
       try {
-        const [state, builders, agents] = await Promise.all([
+        const [state, maxFee, agents] = await Promise.all([
           fetchUserState(address),
-          fetchBuilderApprovals(address),
+          fetchMaxBuilderFee(address, SUNNY_BUILDER_ADDRESS),
           fetchAgentApprovals(address),
         ]);
         if (cancelled) return;
@@ -76,13 +76,7 @@ export default function JoinPage() {
         const v = state?.marginSummary?.accountValue;
         if (v) setAccountValue(v);
 
-        const builderApproved = Array.isArray(builders)
-          ? builders.some(
-              (b: { builder?: string }) =>
-                b?.builder?.toLowerCase() ===
-                SUNNY_BUILDER_ADDRESS.toLowerCase(),
-            )
-          : false;
+        const builderApproved = maxFee > 0;
         if (builderApproved) setBuilderStatus("success");
 
         // Match local meta (no priv key needed here — just identifying which

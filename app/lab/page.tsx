@@ -9,7 +9,7 @@ import {
   approveAgent,
   approveBuilderFee,
   fetchAgentApprovals,
-  fetchBuilderApprovals,
+  fetchMaxBuilderFee,
   fetchUserState,
 } from "@/lib/hl";
 import {
@@ -41,19 +41,14 @@ export default function Home() {
   async function refreshState() {
     if (!address) return;
     try {
-      const [state, builders, agents] = await Promise.all([
+      const [state, maxFee, agents] = await Promise.all([
         fetchUserState(address),
-        fetchBuilderApprovals(address),
+        fetchMaxBuilderFee(address, SUNNY_BUILDER_ADDRESS),
         fetchAgentApprovals(address),
       ]);
 
       const accountValue = state?.marginSummary?.accountValue;
-      const builderApproved = Array.isArray(builders)
-        ? builders.some(
-            (b: { builder: string }) =>
-              b.builder?.toLowerCase() === SUNNY_BUILDER_ADDRESS.toLowerCase(),
-          )
-        : false;
+      const builderApproved = maxFee > 0;
       const agentCount = Array.isArray(agents) ? agents.length : 0;
       setUserState({ accountValue, builderApproved, agentCount });
     } catch (e) {
