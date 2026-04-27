@@ -16,6 +16,8 @@ import {
 import { RISK_PROFILES } from "@/lib/leverage";
 import { FLEET } from "@/app/components/CaptainCard";
 import { Constellation } from "@/app/components/Constellation";
+import { AlphaBanner } from "@/app/components/AlphaBanner";
+import { CaptainLog } from "@/app/components/CaptainLog";
 
 type AssetPosition = {
   position: {
@@ -189,6 +191,8 @@ export default function Dashboard() {
         </div>
       </header>
 
+      <AlphaBanner />
+
       {paused && (
         <div className="rounded-xl border border-[color:var(--red-dwarf)]/40 bg-[color:var(--red-dwarf)]/10 px-4 py-3 text-xs text-[color:var(--meteor)]">
           <span className="text-[color:var(--red-dwarf)] font-bold">
@@ -332,6 +336,9 @@ export default function Dashboard() {
           )}
         </div>
       </section>
+
+      {/* Captain log — live activity feed from Sunny playbook */}
+      <CaptainLog />
 
       {/* Open positions */}
       <section className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5">
