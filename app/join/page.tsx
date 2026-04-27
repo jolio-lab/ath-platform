@@ -187,10 +187,50 @@ export default function JoinPage() {
     }
   }
 
-  function finish() {
+  const [finishStatus, setFinishStatus] = useState<Status>("idle");
+  const [finishError, setFinishError] = useState<string | null>(null);
+
+  async function finish() {
+    if (!address) return;
     saveSettings({ riskProfile: risk, leverage });
-    setStep(4);
-    setTimeout(() => router.push("/dashboard"), 1200);
+    setFinishStatus("loading");
+    setFinishError(null);
+
+    // Pull the agent record we saved at step 2 — we need the priv key to
+    // register server-side so the multi-account runner can sign on behalf
+    // of the user later.
+    const local = loadAgent();
+    if (!local || local.forUser.toLowerCase() !== address.toLowerCase()) {
+      setFinishStatus("error");
+      setFinishError(
+        "agent record missing — please re-authorize agent",
+      );
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/users/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          wallet_address: address,
+          agent_address: local.address,
+          agent_priv_key: local.privateKey,
+          risk_profile: risk,
+          leverage,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.error || `register failed (${res.status})`);
+      }
+      setFinishStatus("success");
+      setStep(4);
+      setTimeout(() => router.push("/dashboard"), 1200);
+    } catch (e) {
+      setFinishStatus("error");
+      setFinishError((e as Error).message);
+    }
   }
 
   return (
@@ -339,11 +379,18 @@ export default function JoinPage() {
             </div>
           </div>
 
+          {finishError && (
+            <div className="mt-4 text-xs text-[color:var(--red-dwarf)] font-mono break-all">
+              ✗ {finishError}
+            </div>
+          )}
+
           <button
             onClick={finish}
-            className="mt-6 w-full rounded-full bg-[color:var(--starlight)] text-[color:var(--void)] py-3 text-sm font-bold hover:opacity-90 transition"
+            disabled={finishStatus === "loading"}
+            className="mt-6 w-full rounded-full bg-[color:var(--starlight)] text-[color:var(--void)] py-3 text-sm font-bold hover:opacity-90 disabled:opacity-50 transition"
           >
-            Set sail →
+            {finishStatus === "loading" ? "Registering…" : "Set sail →"}
           </button>
         </Card>
       )}
