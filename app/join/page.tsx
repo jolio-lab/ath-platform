@@ -8,10 +8,17 @@ import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import {
   approveAgent,
   approveBuilderFee,
+  fetchAgentApprovals,
+  fetchBuilderApprovals,
   fetchUserState,
 } from "@/lib/hl";
 import { MAX_BUILDER_FEE, SUNNY_BUILDER_ADDRESS } from "@/lib/constants";
-import { saveAgent, saveSettings } from "@/lib/agentStorage";
+import {
+  loadAgent,
+  loadSettings,
+  saveAgent,
+  saveSettings,
+} from "@/lib/agentStorage";
 import { RISK_PROFILES, type RiskProfile } from "@/lib/leverage";
 
 type Status = "idle" | "loading" | "success" | "error";
@@ -46,19 +53,81 @@ export default function JoinPage() {
   const [leverage, setLeverage] = useState(RISK_PROFILES.balanced.default);
 
   useEffect(() => {
-    if (isConnected && step === 0) setStep(1);
     if (!isConnected && step !== 0) setStep(0);
   }, [isConnected, step]);
 
+  // On wallet connect, skip ahead past steps the user has already completed.
+  // This is what makes a refresh resume where they left off instead of
+  // restarting at "Approve fleet".
   useEffect(() => {
-    if (!address) return;
-    fetchUserState(address)
-      .then((s) => {
-        const v = s?.marginSummary?.accountValue;
+    if (!isConnected || !address) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const [state, builders, agents] = await Promise.all([
+          fetchUserState(address),
+          fetchBuilderApprovals(address),
+          fetchAgentApprovals(address),
+        ]);
+        if (cancelled) return;
+
+        const v = state?.marginSummary?.accountValue;
         if (v) setAccountValue(v);
-      })
-      .catch(() => null);
-  }, [address]);
+
+        const builderApproved = Array.isArray(builders)
+          ? builders.some(
+              (b: { builder?: string }) =>
+                b?.builder?.toLowerCase() ===
+                SUNNY_BUILDER_ADDRESS.toLowerCase(),
+            )
+          : false;
+        if (builderApproved) setBuilderStatus("success");
+
+        const local = loadAgent();
+        const agentForThisUser =
+          local && local.forUser.toLowerCase() === address.toLowerCase()
+            ? local
+            : null;
+        const agentOnChain =
+          agentForThisUser &&
+          Array.isArray(agents) &&
+          agents.some(
+            (a: { address?: string }) =>
+              a?.address?.toLowerCase() ===
+              agentForThisUser.address.toLowerCase(),
+          );
+        if (agentOnChain && agentForThisUser) {
+          setAgentAddress(agentForThisUser.address);
+          setAgentStatus("success");
+        }
+
+        const savedSettings = loadSettings();
+
+        // Decide where to resume.
+        if (agentOnChain && savedSettings) {
+          // Fully onboarded — punt to dashboard so refreshes don't re-show
+          // the wizard at all.
+          router.replace("/dashboard");
+          return;
+        }
+        if (agentOnChain) {
+          setStep(3);
+          return;
+        }
+        if (builderApproved) {
+          setStep(2);
+          return;
+        }
+        setStep(1);
+      } catch {
+        // best-effort skip-ahead — fall back to step 1 on error
+        setStep((s) => (s === 0 ? 1 : s));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isConnected, address, router]);
 
   const profile = RISK_PROFILES[risk];
 
