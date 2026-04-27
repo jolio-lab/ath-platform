@@ -57,3 +57,33 @@ export function loadSettings(): UserSettings | null {
     return null;
   }
 }
+
+export function clearSettings() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(SETTINGS_KEY);
+}
+
+// Pause flag is per-wallet — when paused, the user's fleet should not open new
+// positions. The flag lives in localStorage today; the server-side trade loop
+// will read it once the multi-account runner is wired up. This NEVER affects
+// Sunny (the founder's personal agent on Mac mini) — that runs on its own keys
+// and never reads ATH user state.
+const PAUSE_KEY_PREFIX = "ath:paused:";
+
+function pauseKey(userAddress: string) {
+  return `${PAUSE_KEY_PREFIX}${userAddress.toLowerCase()}`;
+}
+
+export function loadPaused(userAddress: string): boolean {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem(pauseKey(userAddress)) === "1";
+}
+
+export function savePaused(userAddress: string, paused: boolean) {
+  if (typeof window === "undefined") return;
+  if (paused) {
+    localStorage.setItem(pauseKey(userAddress), "1");
+  } else {
+    localStorage.removeItem(pauseKey(userAddress));
+  }
+}

@@ -5,7 +5,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { fetchUserState } from "@/lib/hl";
-import { loadAgent, loadSettings, type AgentRecord, type UserSettings } from "@/lib/agentStorage";
+import {
+  loadAgent,
+  loadPaused,
+  loadSettings,
+  savePaused,
+  type AgentRecord,
+  type UserSettings,
+} from "@/lib/agentStorage";
 import { RISK_PROFILES } from "@/lib/leverage";
 import { FLEET } from "@/app/components/CaptainCard";
 import { Constellation } from "@/app/components/Constellation";
@@ -42,11 +49,23 @@ export default function Dashboard() {
   const [agent, setAgent] = useState<AgentRecord | null>(null);
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [captains, setCaptains] = useState<CaptainStatus[]>([]);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     setAgent(loadAgent());
     setSettings(loadSettings());
   }, []);
+
+  useEffect(() => {
+    if (address) setPaused(loadPaused(address));
+  }, [address]);
+
+  function togglePause() {
+    if (!address) return;
+    const next = !paused;
+    savePaused(address, next);
+    setPaused(next);
+  }
 
   useEffect(() => {
     if (!isConnected || !address) {
@@ -140,11 +159,46 @@ export default function Dashboard() {
             Dashboard
           </h1>
         </div>
-        <div className="flex items-center gap-2 text-xs text-[color:var(--meteor)] font-mono">
-          <span className="inline-block w-1.5 h-1.5 rounded-full bg-[color:var(--green-giant)] orbit-pulse" />
-          Live · {address?.slice(0, 6)}…{address?.slice(-4)}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 text-xs text-[color:var(--meteor)] font-mono">
+            <span
+              className="inline-block w-1.5 h-1.5 rounded-full orbit-pulse"
+              style={{
+                backgroundColor: paused
+                  ? "var(--red-dwarf)"
+                  : "var(--green-giant)",
+              }}
+            />
+            {paused ? "Paused" : "Live"} · {address?.slice(0, 6)}…
+            {address?.slice(-4)}
+          </div>
+          <button
+            onClick={togglePause}
+            className="rounded-full border px-4 py-1.5 text-xs font-bold font-mono uppercase tracking-wider transition"
+            style={{
+              borderColor: paused
+                ? "var(--green-giant)"
+                : "var(--red-dwarf)",
+              color: paused
+                ? "var(--green-giant)"
+                : "var(--red-dwarf)",
+            }}
+          >
+            {paused ? "Resume fleet" : "Pause fleet"}
+          </button>
         </div>
       </header>
+
+      {paused && (
+        <div className="rounded-xl border border-[color:var(--red-dwarf)]/40 bg-[color:var(--red-dwarf)]/10 px-4 py-3 text-xs text-[color:var(--meteor)]">
+          <span className="text-[color:var(--red-dwarf)] font-bold">
+            Fleet paused.
+          </span>{" "}
+          Existing positions stay open and will continue to update; the fleet
+          will not enter new positions until you resume. Pause is enforced once
+          the multi-account runner ships — until then it&apos;s a UI flag only.
+        </div>
+      )}
 
       {/* Top stats */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
