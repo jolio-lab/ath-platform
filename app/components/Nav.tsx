@@ -55,12 +55,6 @@ export function Nav() {
           >
             Dashboard
           </Link>
-          <Link
-            href="/lab"
-            className="hover:text-[color:var(--starlight)] hidden sm:inline"
-          >
-            Lab
-          </Link>
           {joined ? (
             <div className="relative">
               <button
