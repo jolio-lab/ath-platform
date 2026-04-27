@@ -14,7 +14,9 @@ import {
 } from "@/lib/hl";
 import { MAX_BUILDER_FEE, SUNNY_BUILDER_ADDRESS } from "@/lib/constants";
 import {
+  clearAgentSecret,
   loadAgent,
+  loadAgentMeta,
   loadSettings,
   saveAgent,
   saveSettings,
@@ -83,21 +85,23 @@ export default function JoinPage() {
           : false;
         if (builderApproved) setBuilderStatus("success");
 
-        const local = loadAgent();
-        const agentForThisUser =
-          local && local.forUser.toLowerCase() === address.toLowerCase()
-            ? local
+        // Match local meta (no priv key needed here — just identifying which
+        // agent we previously authorized for this wallet).
+        const meta = loadAgentMeta();
+        const metaForThisUser =
+          meta && meta.forUser.toLowerCase() === address.toLowerCase()
+            ? meta
             : null;
         const agentOnChain =
-          agentForThisUser &&
+          metaForThisUser &&
           Array.isArray(agents) &&
           agents.some(
             (a: { address?: string }) =>
               a?.address?.toLowerCase() ===
-              agentForThisUser.address.toLowerCase(),
+              metaForThisUser.address.toLowerCase(),
           );
-        if (agentOnChain && agentForThisUser) {
-          setAgentAddress(agentForThisUser.address);
+        if (agentOnChain && metaForThisUser) {
+          setAgentAddress(metaForThisUser.address);
           setAgentStatus("success");
         }
 
@@ -224,6 +228,9 @@ export default function JoinPage() {
       if (!res.ok) {
         throw new Error(data?.error || `register failed (${res.status})`);
       }
+      // Priv key is now in Supabase (encrypted). Wipe it from sessionStorage
+      // so a stolen browser session can't read it.
+      clearAgentSecret();
       setFinishStatus("success");
       setStep(4);
       setTimeout(() => router.push("/dashboard"), 1200);

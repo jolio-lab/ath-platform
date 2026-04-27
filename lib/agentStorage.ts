@@ -4,7 +4,16 @@
 // This is the MVP storage. Production will move to encrypted server-side storage
 // (AES-GCM + macOS Keychain master) once the trade loop runs server-side.
 
+// Two-tier storage:
+//   - sessionStorage holds the full AgentRecord (incl. priv key) only as long
+//     as it's needed to register the user server-side. We wipe it the moment
+//     POST /api/users/register succeeds — after that the priv key lives only
+//     in Supabase, AES-GCM encrypted.
+//   - localStorage holds AgentMeta (address, name, approvedAt, forUser) so the
+//     UI can keep recognising a returning visitor as "joined" without keeping
+//     their priv key around in the browser.
 const KEY = "ath:agent";
+const META_KEY = "ath:agent_meta";
 
 export type AgentRecord = {
   privateKey: `0x${string}`;
@@ -14,9 +23,18 @@ export type AgentRecord = {
   forUser: `0x${string}`;
 };
 
+export type AgentMeta = Omit<AgentRecord, "privateKey">;
+
 export function saveAgent(rec: AgentRecord) {
   if (typeof window === "undefined") return;
   sessionStorage.setItem(KEY, JSON.stringify(rec));
+  const meta: AgentMeta = {
+    address: rec.address,
+    name: rec.name,
+    approvedAt: rec.approvedAt,
+    forUser: rec.forUser,
+  };
+  localStorage.setItem(META_KEY, JSON.stringify(meta));
 }
 
 export function loadAgent(): AgentRecord | null {
@@ -30,9 +48,29 @@ export function loadAgent(): AgentRecord | null {
   }
 }
 
+export function loadAgentMeta(): AgentMeta | null {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem(META_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as AgentMeta;
+  } catch {
+    return null;
+  }
+}
+
+// Wipe just the priv key. Meta stays so the UI keeps showing "joined".
+// Call this after a successful /api/users/register.
+export function clearAgentSecret() {
+  if (typeof window === "undefined") return;
+  sessionStorage.removeItem(KEY);
+}
+
+// Full wipe — used by Disconnect.
 export function clearAgent() {
   if (typeof window === "undefined") return;
   sessionStorage.removeItem(KEY);
+  localStorage.removeItem(META_KEY);
 }
 
 const SETTINGS_KEY = "ath:settings";

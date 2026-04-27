@@ -6,11 +6,11 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { fetchUserState } from "@/lib/hl";
 import {
-  loadAgent,
+  loadAgentMeta,
   loadPaused,
   loadSettings,
   savePaused,
-  type AgentRecord,
+  type AgentMeta,
   type UserSettings,
 } from "@/lib/agentStorage";
 import { RISK_PROFILES } from "@/lib/leverage";
@@ -48,13 +48,13 @@ export default function Dashboard() {
   const router = useRouter();
   const { address, isConnected } = useAccount();
   const [hlState, setHlState] = useState<ClearinghouseState | null>(null);
-  const [agent, setAgent] = useState<AgentRecord | null>(null);
+  const [agent, setAgent] = useState<AgentMeta | null>(null);
   const [settings, setSettings] = useState<UserSettings | null>(null);
   const [captains, setCaptains] = useState<CaptainStatus[]>([]);
   const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    setAgent(loadAgent());
+    setAgent(loadAgentMeta());
     setSettings(loadSettings());
   }, []);
 

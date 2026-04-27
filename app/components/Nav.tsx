@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAccount, useDisconnect } from "wagmi";
 import { useRouter } from "next/navigation";
-import { clearAgent, clearSettings, loadAgent } from "@/lib/agentStorage";
+import { clearAgent, clearSettings, loadAgentMeta } from "@/lib/agentStorage";
 
 export function Nav() {
   const { address, isConnected } = useAccount();
@@ -14,7 +14,7 @@ export function Nav() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    setHasAgent(!!loadAgent());
+    setHasAgent(!!loadAgentMeta());
   }, [isConnected]);
 
   const joined = isConnected && hasAgent;

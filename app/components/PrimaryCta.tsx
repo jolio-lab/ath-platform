@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
-import { loadAgent } from "@/lib/agentStorage";
+import { loadAgentMeta } from "@/lib/agentStorage";
 
 type Size = "lg" | "md";
 
@@ -14,7 +14,7 @@ export function PrimaryCta({ size = "md" }: { size?: Size }) {
 
   useEffect(() => {
     setMounted(true);
-    setHasAgent(!!loadAgent());
+    setHasAgent(!!loadAgentMeta());
   }, [isConnected]);
 
   const joined = mounted && isConnected && hasAgent;
