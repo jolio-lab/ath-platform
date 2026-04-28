@@ -1,7 +1,8 @@
 "use client";
 
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useAccount, useWalletClient } from "wagmi";
+import { useAccount, useSwitchChain, useWalletClient } from "wagmi";
+import { arbitrum } from "wagmi/chains";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
@@ -37,6 +38,18 @@ export default function JoinPage() {
   const router = useRouter();
   const { address, isConnected } = useAccount();
   const { data: walletClient } = useWalletClient();
+  const { switchChainAsync } = useSwitchChain();
+
+  // HL signs all EIP-712 payloads with chainId = 42161 (Arbitrum). If the
+  // user's wallet is on a different chain (mainnet by default), viem rejects
+  // the sign with "Provided chainId X must match the active chainId Y".
+  // Wallets won't switch silently — we ask them to before signing.
+  async function ensureArbitrum() {
+    if (!walletClient) return;
+    if (walletClient.chain.id !== arbitrum.id) {
+      await switchChainAsync({ chainId: arbitrum.id });
+    }
+  }
 
   const [step, setStep] = useState(0);
   const [accountValue, setAccountValue] = useState<string | null>(null);
@@ -138,6 +151,7 @@ export default function JoinPage() {
     setBuilderStatus("loading");
     setBuilderError(null);
     try {
+      await ensureArbitrum();
       await approveBuilderFee(
         {
           address,
@@ -158,6 +172,7 @@ export default function JoinPage() {
     setAgentStatus("loading");
     setAgentError(null);
     try {
+      await ensureArbitrum();
       const pk = generatePrivateKey();
       const acct = privateKeyToAccount(pk);
       const name = `ATH Fleet ${Date.now().toString().slice(-6)}`;
