@@ -1,4 +1,4 @@
-import { CaptainPlan } from "@/app/components/CaptainPlan";
+import { Playbook } from "@/app/components/Playbook";
 import { ChopperBiasPanel } from "@/app/components/ChopperBias";
 import { CrewFeed } from "@/app/components/CrewFeed";
 
@@ -25,7 +25,7 @@ export default function FleetPage() {
         </p>
       </header>
 
-      <CaptainPlan />
+      <Playbook />
       <ChopperBiasPanel />
       <CrewFeed />
 
