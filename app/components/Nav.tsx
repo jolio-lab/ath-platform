@@ -50,6 +50,12 @@ export function Nav() {
             Fleet
           </Link>
           <Link
+            href="/fleet"
+            className="hover:text-[color:var(--starlight)] hidden sm:inline"
+          >
+            Intel
+          </Link>
+          <Link
             href="/dashboard"
             className="hover:text-[color:var(--starlight)] hidden sm:inline"
           >
