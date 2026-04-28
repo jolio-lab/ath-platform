@@ -2,8 +2,9 @@
 
 import dynamic from "next/dynamic";
 
-const Playbook = dynamic(
-  () => import("@/app/components/Playbook").then((m) => m.Playbook),
+const CaptainVerdict = dynamic(
+  () =>
+    import("@/app/components/CaptainVerdict").then((m) => m.CaptainVerdict),
   { ssr: false, loading: () => <SectionLoading label="loading playbook…" /> },
 );
 
@@ -35,7 +36,7 @@ export default function FleetPage() {
         </p>
       </header>
 
-      <Playbook />
+      <CaptainVerdict />
       <ChopperBiasPanel />
       <CrewFeed />
 
