@@ -236,13 +236,21 @@ export default function JoinPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-10 flex-1 flex flex-col gap-6">
-      <div>
-        <div className="text-xs font-mono uppercase tracking-widest text-[color:var(--meteor)]">
-          Onboarding
+      <div className="flex items-end justify-between gap-3 flex-wrap">
+        <div>
+          <div className="text-xs font-mono uppercase tracking-widest text-[color:var(--meteor)]">
+            Onboarding
+          </div>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight">
+            Join the fleet
+          </h1>
         </div>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight">
-          Join the fleet
-        </h1>
+        <a
+          href="/guide"
+          className="text-xs text-[color:var(--meteor)] hover:text-[color:var(--starlight)] underline decoration-dotted"
+        >
+          First time? See setup guide →
+        </a>
       </div>
 
       <Stepper current={step} />
