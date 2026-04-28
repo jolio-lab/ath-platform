@@ -1,12 +1,22 @@
-import { Playbook } from "@/app/components/Playbook";
-import { ChopperBiasPanel } from "@/app/components/ChopperBias";
-import { CrewFeed } from "@/app/components/CrewFeed";
+"use client";
 
-export const metadata = {
-  title: "Fleet · ATH",
-  description:
-    "Read-only intel — Captain's plan, market bias, crew activity from the founder's account.",
-};
+import dynamic from "next/dynamic";
+
+const Playbook = dynamic(
+  () => import("@/app/components/Playbook").then((m) => m.Playbook),
+  { ssr: false, loading: () => <SectionLoading label="loading playbook…" /> },
+);
+
+const ChopperBiasPanel = dynamic(
+  () =>
+    import("@/app/components/ChopperBias").then((m) => m.ChopperBiasPanel),
+  { ssr: false, loading: () => <SectionLoading label="loading bias…" /> },
+);
+
+const CrewFeed = dynamic(
+  () => import("@/app/components/CrewFeed").then((m) => m.CrewFeed),
+  { ssr: false, loading: () => <SectionLoading label="loading feed…" /> },
+);
 
 export default function FleetPage() {
   return (
@@ -33,5 +43,13 @@ export default function FleetPage() {
         Intel sourced from the founder&apos;s Sunny captain · live mirror
       </div>
     </main>
+  );
+}
+
+function SectionLoading({ label }: { label: string }) {
+  return (
+    <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] py-10 text-center text-sm text-[color:var(--meteor)]">
+      {label}
+    </div>
   );
 }
