@@ -18,6 +18,7 @@ import { FLEET } from "@/app/components/CaptainCard";
 import { Constellation } from "@/app/components/Constellation";
 import { AlphaBanner } from "@/app/components/AlphaBanner";
 import { CaptainLog } from "@/app/components/CaptainLog";
+import { TelegramConnect } from "@/app/components/TelegramConnect";
 
 type AssetPosition = {
   position: {
@@ -336,6 +337,9 @@ export default function Dashboard() {
           )}
         </div>
       </section>
+
+      {/* Telegram connect */}
+      <TelegramConnect address={address} />
 
       {/* Captain log — live activity feed from Sunny playbook */}
       <CaptainLog />
