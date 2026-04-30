@@ -50,11 +50,27 @@ export function LiveStats() {
 
   useEffect(() => {
     let alive = true;
-    const tick = () =>
-      fetch("/api/playbook", { cache: "no-store" })
-        .then((r) => r.json())
-        .then((d) => alive && setStats(extractStats(d)))
-        .catch(() => null);
+    const tick = async () => {
+      try {
+        // Try dedicated stats endpoint first (Sunny trade aggregate)
+        const r = await fetch("/api/sunny/stats", { cache: "no-store" });
+        if (r.ok) {
+          const d = (await r.json()) as Stats;
+          if (alive) setStats(d);
+          return;
+        }
+      } catch {
+        // fall through
+      }
+      // Fallback: extract from /api/playbook (legacy shape)
+      try {
+        const r = await fetch("/api/playbook", { cache: "no-store" });
+        const d = await r.json();
+        if (alive) setStats(extractStats(d));
+      } catch {
+        // ignore
+      }
+    };
     tick();
     const id = setInterval(tick, 30000);
     return () => {
