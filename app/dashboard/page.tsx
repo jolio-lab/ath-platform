@@ -19,6 +19,7 @@ import { Constellation } from "@/app/components/Constellation";
 import { AlphaBanner } from "@/app/components/AlphaBanner";
 import { CaptainLog } from "@/app/components/CaptainLog";
 import { TelegramConnect } from "@/app/components/TelegramConnect";
+import { PnLSummaryCard } from "@/app/components/PnLSummaryCard";
 
 type AssetPosition = {
   position: {
@@ -204,6 +205,9 @@ export default function Dashboard() {
           the multi-account runner ships — until then it&apos;s a UI flag only.
         </div>
       )}
+
+      {/* P&L Summary Card */}
+      {address && <PnLSummaryCard address={address} />}
 
       {/* Top stats */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-3">
