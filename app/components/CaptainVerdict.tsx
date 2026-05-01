@@ -827,12 +827,16 @@ export function CaptainVerdict() {
   const checkCard = checkAsset ? cards.find((c) => c.asset === checkAsset) : null;
 
   // Fix #6: Sort by Risk Heat desc, tiebreak by fixed asset order (anti-jitter)
-  const ASSET_ORDER = ["BTC", "ETH", "SOL", "kPEPE", "OP", "HYPE"];
-  const sorted = [...cards].sort((a, b) => {
-    const scoreDiff = (b.risk_heat?.score ?? 0) - (a.risk_heat?.score ?? 0);
-    if (scoreDiff !== 0) return scoreDiff;
-    return ASSET_ORDER.indexOf(a.asset) - ASSET_ORDER.indexOf(b.asset);
-  });
+  // Also hide assets we no longer support (e.g. legacy HYPE during deploy lag)
+  const ASSET_ORDER = ["BTC", "ETH", "SOL", "kPEPE", "DOGE", "OP"];
+  const ASSET_SET = new Set(ASSET_ORDER);
+  const sorted = [...cards]
+    .filter((c) => ASSET_SET.has(c.asset))
+    .sort((a, b) => {
+      const scoreDiff = (b.risk_heat?.score ?? 0) - (a.risk_heat?.score ?? 0);
+      if (scoreDiff !== 0) return scoreDiff;
+      return ASSET_ORDER.indexOf(a.asset) - ASSET_ORDER.indexOf(b.asset);
+    });
 
   return (
     <section

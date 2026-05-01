@@ -1,6 +1,12 @@
 import { Constellation } from "./Constellation";
 
-export type CaptainKey = "polaris" | "vega" | "sirius" | "lyra";
+export type CaptainKey =
+  | "polaris"
+  | "vega"
+  | "sirius"
+  | "atlas"
+  | "altair"
+  | "lyra";
 
 export type Captain = {
   key: CaptainKey;
@@ -35,6 +41,22 @@ export const FLEET: Captain[] = [
     color: "var(--sirius)",
     tagline: "The aggressive hunter",
     description: "Volatility specialist on memecoin perps. Bright, sharp, brief — high-conviction strikes.",
+  },
+  {
+    key: "atlas",
+    name: "Atlas",
+    asset: "DOGE",
+    color: "var(--atlas)",
+    tagline: "The steel anchor",
+    description: "Holds position on memecoin majors. Titan-strong against volatility — patient, dependable, never shaken.",
+  },
+  {
+    key: "altair",
+    name: "Altair",
+    asset: "OP",
+    color: "var(--altair)",
+    tagline: "The keen eye",
+    description: "Precision strikes on layer-2 perps. Eagle vision — picks entries others miss, locks profits before reverse.",
   },
   {
     key: "lyra",

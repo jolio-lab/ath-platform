@@ -30,6 +30,25 @@ const CONSTELLATIONS: Record<string, Point[]> = {
     { x: 35, y: 75 },
     { x: 65, y: 75 },
   ],
+  // Atlas — Pleiades cluster (titan strength, tight bright group)
+  atlas: [
+    { x: 30, y: 25 },
+    { x: 55, y: 18 },
+    { x: 70, y: 35 },
+    { x: 45, y: 45 },
+    { x: 25, y: 55 },
+    { x: 60, y: 65 },
+    { x: 75, y: 80 },
+  ],
+  // Altair — Aquila/eagle wings (sharp, spread, sniper-poised)
+  altair: [
+    { x: 50, y: 15 },
+    { x: 20, y: 35 },
+    { x: 80, y: 35 },
+    { x: 50, y: 50 },
+    { x: 35, y: 80 },
+    { x: 65, y: 80 },
+  ],
 };
 
 const LINES: Record<string, [number, number][]> = {
@@ -37,6 +56,8 @@ const LINES: Record<string, [number, number][]> = {
   vega: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 0]],
   sirius: [[0, 1], [0, 2], [1, 3], [2, 4], [3, 4]],
   lyra: [[0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4]],
+  atlas: [[0, 1], [1, 2], [0, 3], [1, 3], [2, 3], [3, 4], [3, 5], [5, 6]],
+  altair: [[0, 1], [0, 2], [1, 3], [2, 3], [3, 4], [3, 5]],
 };
 
 export function Constellation({

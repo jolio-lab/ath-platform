@@ -16,7 +16,42 @@ type Thought = {
 type Response = { thoughts?: Thought[] };
 
 const REFRESH_MS = 20_000;
-const ACTORS = ["all", "ลูฟี่", "นามิ", "โซโล", "ซันจิ", "โรบิน", "มิฮอว์ค", "ช็อปเปอร์"];
+
+// Hide thoughts about retired assets (e.g. legacy HYPE rows during deploy lag)
+const SUPPORTED_ASSETS = new Set(["BTC", "ETH", "SOL", "kPEPE", "DOGE", "OP"]);
+
+// Translation layer — upstream feed uses internal codenames; we surface them
+// as constellation aliases for the public-facing UI. Keep two-way maps so
+// the API filter can round-trip when the user clicks a button.
+const ACTOR_TO_STAR: Record<string, string> = {
+  "ลูฟี่": "Polaris",      // ETH captain
+  "โซโล": "Vega",         // SOL captain
+  "ซันจิ": "Sirius",       // kPEPE captain
+  "ฟรานกี้": "Atlas",      // DOGE captain
+  "อุซป": "Altair",        // OP captain
+  "มิฮอว์ค": "Lyra",       // reversal/swing role
+  "นามิ": "Pyxis",         // scout (compass constellation)
+  "โรบิน": "Cassiopeia",   // lessons/research
+  "ช็อปเปอร์": "Corvus",   // trend watcher
+};
+const STAR_TO_ACTOR: Record<string, string> = Object.fromEntries(
+  Object.entries(ACTOR_TO_STAR).map(([k, v]) => [v, k]),
+);
+const toStar = (actor: string) => ACTOR_TO_STAR[actor] ?? actor;
+const toActor = (star: string) => STAR_TO_ACTOR[star] ?? star;
+
+const ACTORS = [
+  "all",
+  "Polaris",
+  "Vega",
+  "Sirius",
+  "Atlas",
+  "Altair",
+  "Lyra",
+  "Pyxis",
+  "Cassiopeia",
+  "Corvus",
+];
 
 export function CrewFeed() {
   const [thoughts, setThoughts] = useState<Thought[]>([]);
@@ -28,7 +63,8 @@ export function CrewFeed() {
     const tick = async () => {
       try {
         const params = new URLSearchParams({ limit: "60" });
-        if (actor !== "all") params.set("actor", actor);
+        // Upstream feed expects internal codename — translate back from star alias
+        if (actor !== "all") params.set("actor", toActor(actor));
         const r = await fetch(
           `/api/sunny/crew-feed?${params.toString()}`,
           { cache: "no-store" },
@@ -36,7 +72,12 @@ export function CrewFeed() {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         const d: Response = await r.json();
         if (!mounted) return;
-        setThoughts(Array.isArray(d.thoughts) ? d.thoughts : []);
+        // Drop entries about retired assets so they don't surface in the feed.
+        // Asset === null (system thoughts) are kept.
+        const filtered = (Array.isArray(d.thoughts) ? d.thoughts : []).filter(
+          (t) => !t.asset || SUPPORTED_ASSETS.has(t.asset),
+        );
+        setThoughts(filtered);
         setError(null);
       } catch (e) {
         if (mounted) setError((e as Error).message);
@@ -61,7 +102,7 @@ export function CrewFeed() {
             Behind the scenes — what the founder&apos;s crew is thinking
           </h2>
           <p className="text-xs text-[color:var(--meteor)] mt-1">
-            Sunny ใช้ทีม One Piece characters คุย/ตัดสินใจ. คุณเห็น log ตรงๆ —
+            ทีมเทรด AI — แต่ละดวงดาวคุย/ตัดสินใจกัน. คุณเห็น log ตรงๆ —
             transparent, real-time
           </p>
         </div>
@@ -114,10 +155,15 @@ export function CrewFeed() {
 }
 
 function actorTone(actor: string): string {
+  // Map keyed on raw upstream actor (Thai codename) — render layer translates
+  // separately. Keep this function source-of-truth so a missing alias still
+  // renders a sensible color.
   const colors: Record<string, string> = {
     ลูฟี่: "var(--polaris)",
     โซโล: "var(--vega)",
     ซันจิ: "var(--sirius)",
+    ฟรานกี้: "var(--atlas)",
+    อุซป: "var(--altair)",
     นามิ: "var(--meteor)",
     โรบิน: "var(--lyra)",
     มิฮอว์ค: "var(--red-dwarf)",
@@ -143,7 +189,7 @@ function ThoughtEntry({ t }: { t: Thought }) {
       <div className="flex items-baseline justify-between gap-2 flex-wrap">
         <div className="flex items-baseline gap-2">
           <span style={{ color: tone }} className="font-bold text-sm">
-            {t.actor}
+            {toStar(t.actor)}
           </span>
           <span className="text-[10px] font-mono uppercase tracking-wider text-[color:var(--meteor)]">
             {actionEmoji(t.action)} {t.action.replace(/_/g, " ")}

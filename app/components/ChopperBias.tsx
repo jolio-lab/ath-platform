@@ -28,6 +28,10 @@ type Response = {
 
 const TFS: TF[] = ["15m", "1h", "4h", "1d"];
 
+// Defensive — hide assets not in current fleet (handles deploy-lag drift
+// from upstream Sunny dashboard, e.g. legacy HYPE rows).
+const SUPPORTED_ASSETS = new Set(["BTC", "ETH", "SOL", "kPEPE", "DOGE", "OP"]);
+
 export function ChopperBiasPanel() {
   const [data, setData] = useState<Response | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -96,7 +100,9 @@ export function ChopperBiasPanel() {
               </tr>
             </thead>
             <tbody>
-              {data.assets.map((a) => (
+              {data.assets
+                .filter((a) => SUPPORTED_ASSETS.has(a.asset))
+                .map((a) => (
                 <tr
                   key={a.asset}
                   className="border-t border-[color:var(--border)]"

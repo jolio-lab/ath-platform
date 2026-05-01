@@ -21,7 +21,7 @@ const FAQ = [
   },
   {
     q: "Who runs the captains?",
-    a: "An AI trading agent built and operated by the founder. Polaris, Vega, Sirius, and Lyra each run a distinct strategy on a distinct market — and have been trading the founder's own account live for months.",
+    a: "An AI trading agent built and operated by the founder. Polaris, Vega, Sirius, Atlas, Altair, and Lyra each run a distinct strategy on a distinct market — and have been trading the founder's own account live for months.",
   },
   {
     q: "What happens if the server gets hacked?",
