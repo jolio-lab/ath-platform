@@ -24,7 +24,7 @@ type HLFill = {
 type TradeRow = {
   id: number | string;
   asset: string | null;
-  opened_at: string | null;
+  created_at: string | null;
   closed_at: string | null;
   updated_at: string | null;
   pnl: number | null;
@@ -44,7 +44,7 @@ export async function GET() {
   const sb = supabaseAdmin();
   const { data: tradeRows, error } = await sb
     .from("trade_log")
-    .select("id, asset, opened_at, closed_at, updated_at, pnl, status")
+    .select("id, asset, created_at, closed_at, updated_at, pnl, status")
     .eq("status", "closed");
 
   if (error) {
@@ -76,7 +76,7 @@ export async function GET() {
   const enriched = trades
     .filter((t) => t.asset && BOT_ASSETS.has(t.asset))
     .map((t) => {
-      const openTs = parseIso(t.opened_at);
+      const openTs = parseIso(t.created_at);
       const closeIso = t.closed_at ?? t.updated_at;
       const closeTs = parseIso(closeIso);
       if (!openTs || !closeTs) {
