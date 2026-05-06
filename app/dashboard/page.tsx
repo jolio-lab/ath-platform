@@ -20,6 +20,7 @@ import { AlphaBanner } from "@/app/components/AlphaBanner";
 import { CaptainLog } from "@/app/components/CaptainLog";
 import { TelegramConnect } from "@/app/components/TelegramConnect";
 import { PnLSummaryCard } from "@/app/components/PnLSummaryCard";
+import { PositionsTabs } from "@/app/components/PositionsTabs";
 
 type AssetPosition = {
   position: {
@@ -348,84 +349,10 @@ export default function Dashboard() {
       {/* Captain log — live activity feed from Sunny playbook */}
       <CaptainLog />
 
-      {/* Open positions */}
-      <section className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5">
-        <div className="flex items-baseline justify-between mb-4">
-          <h2 className="font-bold text-lg">Open positions</h2>
-          <span className="text-[10px] font-mono uppercase tracking-wider text-[color:var(--meteor)]">
-            from your HL account
-          </span>
-        </div>
-        {positions.length === 0 ? (
-          <div className="py-10 text-center text-sm text-[color:var(--meteor)]">
-            No positions open. The fleet is watching.
-          </div>
-        ) : (
-          <div className="overflow-x-auto -mx-2">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-[10px] uppercase tracking-wider text-[color:var(--meteor)]">
-                  <th className="text-left py-2 px-2">Coin</th>
-                  <th className="text-right py-2 px-2">Side</th>
-                  <th className="text-right py-2 px-2">Size</th>
-                  <th className="text-right py-2 px-2">Entry</th>
-                  <th className="text-right py-2 px-2">Lev</th>
-                  <th className="text-right py-2 px-2">Notional</th>
-                  <th className="text-right py-2 px-2">PnL</th>
-                </tr>
-              </thead>
-              <tbody>
-                {positions.map((ap) => {
-                  const p = ap.position;
-                  const sz = parseFloat(p.szi);
-                  const isLong = sz > 0;
-                  const pnl = parseFloat(p.unrealizedPnl);
-                  return (
-                    <tr
-                      key={p.coin}
-                      className="border-t border-[color:var(--border)]"
-                    >
-                      <td className="py-2 px-2 font-bold">{p.coin}</td>
-                      <td
-                        className="text-right py-2 px-2 font-mono text-xs"
-                        style={{
-                          color: isLong
-                            ? "var(--green-giant)"
-                            : "var(--red-dwarf)",
-                        }}
-                      >
-                        {isLong ? "LONG" : "SHORT"}
-                      </td>
-                      <td className="text-right py-2 px-2 font-mono">
-                        {Math.abs(sz)}
-                      </td>
-                      <td className="text-right py-2 px-2 font-mono">
-                        ${parseFloat(p.entryPx).toLocaleString()}
-                      </td>
-                      <td className="text-right py-2 px-2 font-mono">
-                        {p.leverage?.value}x
-                      </td>
-                      <td className="text-right py-2 px-2 font-mono">
-                        ${parseFloat(p.positionValue).toFixed(2)}
-                      </td>
-                      <td
-                        className="text-right py-2 px-2 font-mono font-bold"
-                        style={{
-                          color: pnl >= 0
-                            ? "var(--green-giant)"
-                            : "var(--red-dwarf)",
-                        }}
-                      >
-                        {pnl >= 0 ? "+" : ""}${pnl.toFixed(2)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
+      {/* Positions (Open | Closed tabs) */}
+      {address && (
+        <PositionsTabs address={address} openPositions={positions} />
+      )}
 
       <div className="text-center text-xs text-[color:var(--meteor)]">
         ATH dashboard · data direct from Hyperliquid
