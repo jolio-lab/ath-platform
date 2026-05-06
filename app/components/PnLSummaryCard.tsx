@@ -102,14 +102,14 @@ export function PnLSummaryCard({ address }: { address: string }) {
   // Active duration text
   let durationText: string;
   if (stats.daysActive > 0) {
-    durationText = `${stats.daysActive} วัน ${stats.hoursActive} ชม.`;
+    durationText = `${stats.daysActive}d ${stats.hoursActive}h`;
   } else if (stats.hoursActive > 0) {
     const minutes = Math.floor(
       (stats.elapsedMs - stats.hoursActive * 3_600_000) / 60_000,
     );
-    durationText = `${stats.hoursActive} ชม. ${minutes} นาที`;
+    durationText = `${stats.hoursActive}h ${minutes}m`;
   } else {
-    durationText = `${Math.floor(stats.elapsedMs / 60_000)} นาที`;
+    durationText = `${Math.floor(stats.elapsedMs / 60_000)}m`;
   }
 
   return (
@@ -121,19 +121,22 @@ export function PnLSummaryCard({ address }: { address: string }) {
         </span>
       </div>
 
-      {/* Top: ทุน + ปัจจุบัน + PnL */}
+      {/* Top: Total balance (BIG) + Active time + Total PnL */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
         <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-2)] p-3">
           <div className="text-[10px] font-mono uppercase tracking-wider text-[color:var(--meteor)]">
-            ทุนเริ่ม (ประมาณ)
+            Total Balance
           </div>
           <div className="font-bold text-xl mt-1">
-            {fmtUsd(stats.initialCapital)}
+            {fmtUsd(stats.currentBalance)}
+          </div>
+          <div className="text-[10px] font-mono text-[color:var(--meteor)] mt-0.5">
+            initial ≈ {fmtUsd(stats.initialCapital)}
           </div>
         </div>
         <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-2)] p-3">
           <div className="text-[10px] font-mono uppercase tracking-wider text-[color:var(--meteor)]">
-            ใช้งานมาแล้ว
+            Active Time
           </div>
           <div className="font-bold text-xl mt-1">{durationText}</div>
         </div>
@@ -142,7 +145,7 @@ export function PnLSummaryCard({ address }: { address: string }) {
           style={{ borderColor: `${tone}55`, backgroundColor: `${tone}10` }}
         >
           <div className="text-[10px] font-mono uppercase tracking-wider text-[color:var(--meteor)]">
-            กำไร/ขาดทุนรวม
+            Total P&L
           </div>
           <div className="font-bold text-xl mt-1" style={{ color: tone }}>
             {arrow} {fmtUsd(stats.totalPnl, true)}
@@ -151,7 +154,7 @@ export function PnLSummaryCard({ address }: { address: string }) {
             className="text-[11px] font-mono mt-0.5"
             style={{ color: tone }}
           >
-            {fmtPct(stats.totalPnlPct)} · ปัจจุบัน {fmtUsd(stats.currentBalance)}
+            {fmtPct(stats.totalPnlPct)} since join
           </div>
         </div>
       </div>
@@ -167,7 +170,7 @@ export function PnLSummaryCard({ address }: { address: string }) {
           }}
         >
           <div className="text-[10px] font-mono uppercase tracking-wider text-[color:var(--meteor)]">
-            🏆 Asset กำไรสูงสุด
+            🏆 Top Winner
           </div>
           {stats.bestAsset ? (
             <>
@@ -183,7 +186,7 @@ export function PnLSummaryCard({ address }: { address: string }) {
             </>
           ) : (
             <div className="text-sm text-[color:var(--meteor)] mt-1">
-              — ยังไม่มี asset ที่กำไร
+              — no winning asset yet
             </div>
           )}
         </div>
@@ -196,7 +199,7 @@ export function PnLSummaryCard({ address }: { address: string }) {
           }}
         >
           <div className="text-[10px] font-mono uppercase tracking-wider text-[color:var(--meteor)]">
-            💀 Asset ขาดทุนสูงสุด
+            💀 Top Loser
           </div>
           {stats.worstAsset ? (
             <>
@@ -212,7 +215,7 @@ export function PnLSummaryCard({ address }: { address: string }) {
             </>
           ) : (
             <div className="text-sm text-[color:var(--meteor)] mt-1">
-              — ยังไม่มี asset ที่ขาดทุน
+              — no losing asset yet
             </div>
           )}
         </div>
@@ -222,7 +225,7 @@ export function PnLSummaryCard({ address }: { address: string }) {
       {stats.byAsset.length > 0 && (
         <div className="mt-4 pt-4 border-t border-[color:var(--border)]">
           <div className="text-[10px] font-mono uppercase tracking-wider text-[color:var(--meteor)] mb-2">
-            ทุก asset (realized + unrealized)
+            All assets (realized + unrealized)
           </div>
           <div className="space-y-1.5">
             {stats.byAsset.map((a) => {
@@ -253,8 +256,8 @@ export function PnLSummaryCard({ address }: { address: string }) {
       )}
 
       <div className="mt-3 text-[10px] text-[color:var(--meteor)] font-mono">
-        * ทุนเริ่ม = current balance − total PnL (ไม่นับ deposit/withdraw
-        ระหว่างทาง — เป็นเลขประมาณ)
+        * Initial capital ≈ current balance − total PnL (approximate — does not
+        account for mid-period deposits/withdrawals)
       </div>
     </section>
   );
