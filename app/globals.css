@@ -27,6 +27,10 @@
   --altair: #2dd4bf;
   --lyra: #fcd34d;
   --andromeda: #f472b6;
+  /* 2026-05-08 — Roger ราชาโจรสลัด = Regulus (the King's star) */
+  --regulus: #fbbf24;
+  /* Brook range scalp = Procyon */
+  --procyon: #22d3ee;
 }
 
 @theme inline {

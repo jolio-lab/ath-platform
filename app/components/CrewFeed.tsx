@@ -24,15 +24,21 @@ const SUPPORTED_ASSETS = new Set(["BTC", "ETH", "SOL", "kPEPE", "DOGE", "OP"]);
 // as constellation aliases for the public-facing UI. Keep two-way maps so
 // the API filter can round-trip when the user clicks a button.
 const ACTOR_TO_STAR: Record<string, string> = {
-  "ลูฟี่": "Polaris",      // ETH captain
-  "โซโล": "Vega",         // SOL captain
-  "ซันจิ": "Sirius",       // kPEPE captain
-  "ฟรานกี้": "Atlas",      // DOGE captain
-  "อุซป": "Altair",        // OP captain
-  "มิฮอว์ค": "Lyra",       // reversal/swing role
-  "นามิ": "Pyxis",         // scout (compass constellation)
-  "โรบิน": "Cassiopeia",   // lessons/research
-  "ช็อปเปอร์": "Corvus",   // trend watcher
+  // 👑 ราชาโจรสลัด — direction authority (NEW 2026-05-08)
+  "โรเจอร์": "Regulus",     // The King's star — leads the fleet
+  // 🦅 Scalp specialists
+  "มิฮอว์ค": "Lyra",        // RSI extreme reversal scalp
+  "บรู๊ค":   "Procyon",     // Range scalp (NEW 2026-05-08)
+  // 🏴‍☠️ AI Risk Allocators (per-asset Sonnet)
+  "ลูฟี่":   "Polaris",     // ETH captain
+  "โซโล":    "Vega",        // SOL captain
+  "ซันจิ":   "Sirius",      // kPEPE captain
+  "ฟรานกี้": "Atlas",       // DOGE captain
+  "อุซป":    "Altair",      // OP captain
+  // Disabled but preserve mapping for legacy log entries
+  "นามิ":    "Pyxis",       // scout (disabled 2026-05-08)
+  "โรบิน":   "Cassiopeia",  // lessons (manual /robin)
+  "ช็อปเปอร์": "Corvus",    // trend watcher
 };
 const STAR_TO_ACTOR: Record<string, string> = Object.fromEntries(
   Object.entries(ACTOR_TO_STAR).map(([k, v]) => [v, k]),
@@ -40,17 +46,18 @@ const STAR_TO_ACTOR: Record<string, string> = Object.fromEntries(
 const toStar = (actor: string) => ACTOR_TO_STAR[actor] ?? actor;
 const toActor = (star: string) => STAR_TO_ACTOR[star] ?? star;
 
+// 2026-05-08 — เรียงใหม่: ราชาก่อน → ลูกเรือ scalp → AI per-asset
 const ACTORS = [
   "all",
-  "Polaris",
-  "Vega",
-  "Sirius",
-  "Atlas",
-  "Altair",
-  "Lyra",
-  "Pyxis",
-  "Cassiopeia",
-  "Corvus",
+  "Regulus",     // 👑 โรเจอร์ — King
+  "Lyra",        // 🦅 มิฮอว์ค — Scalp
+  "Procyon",     // 🎣 บรู๊ค — Range
+  "Polaris",     // ETH
+  "Vega",        // SOL
+  "Sirius",      // kPEPE
+  "Atlas",       // DOGE
+  "Altair",      // OP
+  "Cassiopeia",  // โรบิน (manual)
 ];
 
 export function CrewFeed() {
@@ -159,20 +166,28 @@ function actorTone(actor: string): string {
   // separately. Keep this function source-of-truth so a missing alias still
   // renders a sensible color.
   const colors: Record<string, string> = {
+    // 👑 King — ราชาโจรสลัด (gold)
+    โรเจอร์: "var(--regulus)",
+    // Scalp specialists
+    มิฮอว์ค: "var(--red-dwarf)",
+    บรู๊ค: "var(--procyon)",
+    // AI per-asset
     ลูฟี่: "var(--polaris)",
     โซโล: "var(--vega)",
     ซันจิ: "var(--sirius)",
     ฟรานกี้: "var(--atlas)",
     อุซป: "var(--altair)",
+    // Legacy / disabled
     นามิ: "var(--meteor)",
     โรบิน: "var(--lyra)",
-    มิฮอว์ค: "var(--red-dwarf)",
     ช็อปเปอร์: "var(--green-giant)",
   };
   return colors[actor] ?? "var(--starlight)";
 }
 
 function actionEmoji(action: string): string {
+  // 2026-05-08 — Roger fire (👑 ราชาสั่งเปิด)
+  if (action === "fire") return "👑";
   if (action.includes("signal")) return "🚨";
   if (action.includes("analyz")) return "🧠";
   if (action.includes("pass") || action.includes("rest") || action.includes("watch")) return "👁";
