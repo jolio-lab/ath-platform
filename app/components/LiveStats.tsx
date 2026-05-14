@@ -101,8 +101,8 @@ export function LiveStats() {
         />
         <Tile
           label="Active captains"
-          value="6"
-          sub="Polaris · Vega · Sirius · Atlas · Altair · Lyra"
+          value="5"
+          sub="Vega · Sirius · Atlas · Altair · Lyra"
         />
         <Tile
           label="Network"

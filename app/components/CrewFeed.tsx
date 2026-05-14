@@ -18,7 +18,7 @@ type Response = { thoughts?: Thought[] };
 const REFRESH_MS = 20_000;
 
 // Hide thoughts about retired assets (e.g. legacy HYPE rows during deploy lag)
-const SUPPORTED_ASSETS = new Set(["BTC", "ETH", "SOL", "kPEPE", "DOGE", "OP"]);
+const SUPPORTED_ASSETS = new Set(["BTC", "SOL", "kPEPE", "DOGE", "OP"]);  // 2026-05-14: ETH retired
 
 // Translation layer — upstream feed uses internal codenames; we surface them
 // as constellation aliases for the public-facing UI. Keep two-way maps so
@@ -30,7 +30,7 @@ const ACTOR_TO_STAR: Record<string, string> = {
   "มิฮอว์ค": "Lyra",        // RSI extreme reversal scalp
   "บรู๊ค":   "Procyon",     // Range scalp (NEW 2026-05-08)
   // 🏴‍☠️ AI Risk Allocators (per-asset Sonnet)
-  "ลูฟี่":   "Polaris",     // ETH captain
+  // 2026-05-14: ลูฟี่/Polaris (ETH) retired
   "โซโล":    "Vega",        // SOL captain
   "ซันจิ":   "Sirius",      // kPEPE captain
   "ฟรานกี้": "Atlas",       // DOGE captain
@@ -52,7 +52,6 @@ const ACTORS = [
   "Regulus",     // 👑 โรเจอร์ — King
   "Lyra",        // 🦅 มิฮอว์ค — Scalp
   "Procyon",     // 🎣 บรู๊ค — Range
-  "Polaris",     // ETH
   "Vega",        // SOL
   "Sirius",      // kPEPE
   "Atlas",       // DOGE

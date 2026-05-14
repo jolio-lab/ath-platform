@@ -18,14 +18,7 @@ export type Captain = {
 };
 
 export const FLEET: Captain[] = [
-  {
-    key: "polaris",
-    name: "Polaris",
-    asset: "ETH",
-    color: "var(--polaris)",
-    tagline: "The steady navigator",
-    description: "Long-horizon trades on the largest perp market. Methodical, patient, never loses bearing.",
-  },
+  // 2026-05-14: Polaris (ETH) retired
   {
     key: "vega",
     name: "Vega",

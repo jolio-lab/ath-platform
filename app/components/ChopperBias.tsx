@@ -30,7 +30,7 @@ const TFS: TF[] = ["15m", "1h", "4h", "1d"];
 
 // Defensive — hide assets not in current fleet (handles deploy-lag drift
 // from upstream Sunny dashboard, e.g. legacy HYPE rows).
-const SUPPORTED_ASSETS = new Set(["BTC", "ETH", "SOL", "kPEPE", "DOGE", "OP"]);
+const SUPPORTED_ASSETS = new Set(["BTC", "SOL", "kPEPE", "DOGE", "OP"]);  // 2026-05-14: ETH retired
 
 export function ChopperBiasPanel() {
   const [data, setData] = useState<Response | null>(null);

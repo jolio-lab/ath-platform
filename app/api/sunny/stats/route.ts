@@ -8,7 +8,7 @@ const SUNNY_WALLET =
   process.env.SUNNY_WALLET ?? "0xd8b9388e374448d66df4d1bc8bc286a0e3409d7b";
 
 // Bot trades these assets — rest is user manual (not Sunny's perf)
-const BOT_ASSETS = new Set(["ETH", "SOL", "kPEPE", "DOGE", "OP"]);
+const BOT_ASSETS = new Set(["SOL", "kPEPE", "DOGE", "OP"]);  // 2026-05-14: ETH retired
 
 // Schema does NOT have closed_at. Use created_at + assume max 7-day hold.
 const MAX_HOLD_MS = 7 * 24 * 60 * 60 * 1000;  // 7 days

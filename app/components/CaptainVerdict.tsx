@@ -828,7 +828,7 @@ export function CaptainVerdict() {
 
   // Fix #6: Sort by Risk Heat desc, tiebreak by fixed asset order (anti-jitter)
   // Also hide assets we no longer support (e.g. legacy HYPE during deploy lag)
-  const ASSET_ORDER = ["BTC", "ETH", "SOL", "kPEPE", "DOGE", "OP"];
+  const ASSET_ORDER = ["BTC", "SOL", "kPEPE", "DOGE", "OP"];  // 2026-05-14: ETH retired
   const ASSET_SET = new Set(ASSET_ORDER);
   const sorted = [...cards]
     .filter((c) => ASSET_SET.has(c.asset))
